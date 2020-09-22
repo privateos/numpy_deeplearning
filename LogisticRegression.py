@@ -50,9 +50,11 @@ import torch.optim as optim
 X = torch.from_numpy(X).float()
 Y = torch.from_numpy(Y).float()
 model = nn.Linear(X.shape[1], Y.shape[1])
+# print(model.weight, model.bias)
 epochs=10
 lr = 0.01
 mse = nn.MSELoss()
+# exit()
 optimizer = optim.SGD(model.parameters(), lr=lr)
 for i in range(epochs):
     Y_t = model(X)#X@W + b
