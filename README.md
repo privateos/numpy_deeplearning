@@ -1,0 +1,2 @@
+# numpy_deeplearning
+利用numpy实现deeplearning
