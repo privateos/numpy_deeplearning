@@ -41,3 +41,24 @@ def train(X, Y):
 X = np.random.randn(100, 3)
 Y = np.random.randn(100, 1)
 train(X, Y)
+
+print("start pytorch")
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+X = torch.from_numpy(X).float()
+Y = torch.from_numpy(Y).float()
+model = nn.Linear(X.shape[1], Y.shape[1])
+epochs=10
+lr = 0.01
+mse = nn.MSELoss()
+optimizer = optim.SGD(model.parameters(), lr=lr)
+for i in range(epochs):
+    Y_t = model(X)#X@W + b
+    Y_hat = torch.sigmoid(Y_t)
+    B = mse(Y, Y_hat)
+    optimizer.zero_grad()
+    B.backward()
+    optimizer.step()
+    print('loss = ' + str(B.item()))
