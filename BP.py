@@ -15,9 +15,6 @@ class Linear:
     def parameters(self):
         return [self.w, self.b]
 
-
-
-
 class Sigmoid:
     def __init__(self):
         pass
@@ -33,6 +30,16 @@ class Tanh:
         pass
     def forward(self, x):
         return torch.tanh(x)
+    def parameters(self):
+        return []
+
+class Relu:
+    def __init__(self):
+        pass
+    def forward(self, x):
+        zeros = torch.zeros_like(x)
+        return torch.where(x > zeros, x, zeros)
+    
     def parameters(self):
         return []
 
@@ -58,7 +65,6 @@ class MSELoss:
     def parameters(self):
         return []
 
-
 class SoftmaxCrossEntropyLoss:
     def __init__(self):
         self.softmax = Softmax()
@@ -77,8 +83,8 @@ class SoftmaxCrossEntropyLoss:
 class BP:
     def __init__(self, in_feature, out_feature):
         self.layers = [
-            Linear(in_feature, 128),Tanh(),
-            Linear(128, 64), Sigmoid(),
+            Linear(in_feature, 128),Relu(),
+            Linear(128, 64), Relu(),
             Linear(64, out_feature),
         ]
     
@@ -108,7 +114,6 @@ class SGD:
         for p in self.params:
             p.data -= lr * p.grad.data
 
-
 def get_mnist():
     current_file = os.path.relpath(__file__)
     current_path = os.path.split(current_file)[0]
@@ -117,12 +122,12 @@ def get_mnist():
     x, y = data['x'], data['y']
     return x, y
 
-
-
 def train_model():
     
     X,Y = get_mnist()
     X = X.reshape(X.shape[0], -1)
+    X = X/255.0
+    #exit()
     #print(X.shape, Y.shape)
     #print(Y[0])
     #plt.imshow(X[0].reshape(28, 28))
@@ -132,10 +137,10 @@ def train_model():
     Y = torch.from_numpy(Y).float()
     epochs = 40
     batch_size = 128
-    lr = 0.005
+    lr = 0.01
     model = BP(28*28, 10)
-    #loss = MSELoss()
-    loss = SoftmaxCrossEntropyLoss()
+    loss = MSELoss()
+    #loss = SoftmaxCrossEntropyLoss()
     optimizer = SGD(model.parameters(), lr=lr)
 
     for i in range(epochs):
