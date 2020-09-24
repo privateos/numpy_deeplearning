@@ -39,7 +39,7 @@ np_w = np.random.randn(X.shape[1], Y.shape[1])
 np_b = np.random.randn(Y.shape[1])
 np_w_copy = np.copy(np_w)
 np_b_copy = np.copy(np_b)
-train(X, Y, np_w, np_b)
+#train(X, Y, np_w, np_b)
 
 import torch
 import torch.nn as nn
@@ -57,6 +57,7 @@ def autotrain(X, Y, w, b):
     X = torch.autograd.Variable(X)
     Y = torch.autograd.Variable(Y)
 
+    #print(w.grad)
     for i in range(epochs):
         Y_hat = torch.matmul(X, w) + b
         z = (Y_hat - Y)**2
@@ -68,7 +69,7 @@ def autotrain(X, Y, w, b):
         print(w.grad, b.grad)
 
         w.data = w.data - lr * w.grad.data
-        b.data = b.data - lr* b.grad.data
+        b.data = b.data - lr * b.grad.data
         w.grad.data.zero_()
         b.grad.data.zero_()
         input()
