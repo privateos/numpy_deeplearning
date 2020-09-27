@@ -80,24 +80,48 @@ class SoftmaxCrossEntropyLoss:
     def parameters(self):
         return []
 
-class BP:
-    def __init__(self, in_feature, out_feature):
-        self.layers = [
-            Linear(in_feature, 100),Relu(),
-            Linear(100, 64), Relu(),
-            Linear(64, out_feature),
-        ]
+class SimpleRNN:
+    #[batch_size, time, feature]
+    def __init__(self, feature, hiddens):
+        self.w = torch.autograd.Variable(torch.randn(feature, hiddens)/(feature + hiddens), requires_grad=True)
+        self.u = torch.autograd.Variable(torch.randn(hiddens, hiddens)/(hiddens + hiddens), requires_grad=True)
+        self.b = torch.autograd.Variable(torch.randn(hiddens)/hiddens, requires_grad=True)
     
     def forward(self, x):
-        for layer in self.layers:
-            x = layer.forward(x)
-        return x
+        time = x.size(1)
+        x_t = x[:, 0, :]
+        h_list = []
+        h_t = torch.tanh(torch.matmul(x_t, self.w) + self.b)
+        h_list.append(h_t.unsqueeze(1))
+        h_t_1 = h_t
+        for i in range(1, time):
+            x_t = x[:, i, :]
+            h_t = torch.tanh(torch.matmul(x_t, self.w) + torch.matmul(h_t_1, self.u) + self.b)
+        
+            h_t_1 = h_t
+            h_list.append(h_t.unsqueeze(1))
+
+        Y = torch.cat(h_list, dim=1)
+        return Y
+
+    def parameters(self):
+        return [self.w, self.u, self.b]
+
+class Network:
+    def __init__(self, in_feature, out_feature):
+        self.rnn = SimpleRNN(in_feature, 16)
+        self.linear = Linear(16*28, out_feature)
+    def forward(self, x):
+        rnn_out = self.rnn.forward(x)
+        z = rnn_out.view(-1, 28*16)
+        return self.linear.forward(z)
     
     def parameters(self):
-        p = []
-        for layer in self.layers:
-            p.extend(layer.parameters())
-        return p
+       p = []
+       p.extend(self.rnn.parameters())
+       p.extend(self.linear.parameters())
+       return p
+
 
 class SGD:
     def __init__(self, params, lr=0.001):
@@ -125,7 +149,7 @@ def get_mnist():
 def train_model():
     
     X,Y = get_mnist()
-    X = X.reshape(X.shape[0], -1)
+    X = X.reshape(X.shape[0], 28, 28)
     X = X/255.0
     #exit()
     #print(X.shape, Y.shape)
@@ -135,10 +159,10 @@ def train_model():
     number = X.shape[0]
     X = torch.from_numpy(X).float()
     Y = torch.from_numpy(Y).float()
-    epochs = 40
+    epochs = 100
     batch_size = 128
     lr = 0.01
-    model = BP(28*28, 10)
+    model = Network(28, 10)
     loss = MSELoss()
     #loss = SoftmaxCrossEntropyLoss()
     optimizer = SGD(model.parameters(), lr=lr)
