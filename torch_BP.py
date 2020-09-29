@@ -32,6 +32,19 @@ class BP(nn.Module):
         out = self.layer3(out)
         return out
 
+class BP_1(nn.Module):
+    def __init__(self, in_feature, out_feature):
+        super(BP_1, self).__init__()
+        self.nn = nn.Sequential(
+            nn.Linear(in_feature, 64),
+            nn.RELU(),
+            nn.Linear(64, 32),
+            nn.ReLU(),
+            nn.Linear(32, out_feature)
+        )
+    def forward(self, x):
+        return self.nn(x)
+
 class SoftmaxCrossEntropyLoss(nn.Module):
     def __init__(self):
         super(SoftmaxCrossEntropyLoss, self).__init__()
